@@ -1,6 +1,6 @@
 # kamaji-etcd
 
-![Version: 0.5.1](https://img.shields.io/badge/Version-0.5.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 3.5.6](https://img.shields.io/badge/AppVersion-3.5.6-informational?style=flat-square)
+![Version: 0.5.1](https://img.shields.io/badge/Version-0.5.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 3.5.6](https://img.shields.io/badge/AppVersion-3.5.6-informational?style=flat-square)
 
 Helm chart for deploying a multi-tenant `etcd` cluster.
 
@@ -11,25 +11,34 @@ This solution makes running control planes at scale cheaper and easier to deploy
 As of any Kubernetes cluster, a _tenant cluster_ needs a datastore where to save the state and be able to retrieve data.
 This chart provides a multi-tenant `etcd` as datastore for Kamaji as well as a standalone multi-tenant `etcd` cluster.
 
+## Install prerequisites
+
+This chart depends on `cert-manager`. You must install it before you can proceed with the installation of this chart.
+cert-manager is responsible for generating and renewing the certificates used for mutual TLS authentication between etcd peers and clients.
+
+    helm repo add jetstack https://charts.jetstack.io
+    helm repo update
+    helm repo install cert-manager jetstack/cert-manager -n cert-manager --create-namespace --set "installCRDs=true"
+
 ## Install kamaji-etcd
 
 To install the Chart with the release name `kamaji-etcd`:
 
-        helm repo add clastix https://clastix.github.io/charts
-        helm repo update
-        helm install kamaji-etcd clastix/kamaji-etcd -n kamaji-etcd --create-namespace
+    helm repo add clastix https://clastix.github.io/charts
+    helm repo update
+    helm install kamaji-etcd clastix/kamaji-etcd -n kamaji-etcd --create-namespace
 
 Show the status:
 
-        helm status kamaji-etcd -n kamaji-etcd
+    helm status kamaji-etcd -n kamaji-etcd
 
 Upgrade the Chart
 
-        helm upgrade kamaji-etcd -n kamaji-etcd clastix/kamaji-etcd
+    helm upgrade kamaji-etcd -n kamaji-etcd clastix/kamaji-etcd
 
 Uninstall the Chart
 
-        helm uninstall kamaji-etcd -n kamaji-etcd
+    helm uninstall kamaji-etcd -n kamaji-etcd
 
 ## Customize the installation
 
@@ -40,14 +49,14 @@ Create a copy of the YAML file `values.yaml` and add your overrides to it.
 
 Specify your overrides file when you install the Chart:
 
-        helm upgrade kamaji-etcd --install --namespace kamaji-etcd --create-namespacekamaji-etcd --values myvalues.yaml
+    helm upgrade kamaji-etcd --install --namespace kamaji-etcd --create-namespacekamaji-etcd --values myvalues.yaml
 
 The values in your overrides file `myvalues.yaml` will override their counterparts in the Chart's values.yaml file.
 Any values in `values.yaml` that weren't overridden will keep their defaults.
 
 If you only need to make minor customizations, you can specify them on the command line by using the `--set` option. For example:
 
-        helm upgrade kamaji-etcd --install --namespace kamaji-etcd --create-namespace kamaji-etcd --set replicas=5
+    helm upgrade kamaji-etcd --install --namespace kamaji-etcd --create-namespace kamaji-etcd --set replicas=5
 
 Here the values you can override:
 
