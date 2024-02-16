@@ -12,6 +12,15 @@ This solution makes running control planes at scale cheaper and easier to deploy
 As of any Kubernetes cluster, a _tenant cluster_ needs a datastore where to save the state and be able to retrieve data.
 This chart provides a multi-tenant `etcd` as datastore for Kamaji as well as a standalone multi-tenant `etcd` cluster.
 
+## Install prerequisites
+
+This chart depends on `cert-manager`. You must install it before you can proceed with the installation of this chart.
+cert-manager is responsible for generating and renewing the certificates used for mutual TLS authentication between etcd peers and clients.
+
+    helm repo add jetstack https://charts.jetstack.io
+    helm repo update
+    helm repo install cert-manager jetstack/cert-manager -n cert-manager --create-namespace --set "installCRDs=true"
+
 ## Install kamaji-etcd
 
 To install the Chart with the release name `kamaji-etcd`:
