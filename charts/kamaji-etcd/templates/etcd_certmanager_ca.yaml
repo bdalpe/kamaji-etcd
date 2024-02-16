@@ -1,0 +1,23 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ include "etcd.fullname" . }}-ca-cert
+  namespace: {{ .Release.Namespace }}
+spec:
+  subject:
+    countries:
+      - IT
+    localities:
+      - Milan
+    organizations:
+      - Clastix
+  isCA: true
+  commonName: Clastix CA
+  secretName: {{ include "etcd.caSecretName" . }}
+  privateKey:
+    algorithm: RSA
+    size: 2048
+  issuerRef:
+    name: {{ include "etcd.fullname" . }}-selfsigned-issuer
+    kind: Issuer
+    group: cert-manager.io

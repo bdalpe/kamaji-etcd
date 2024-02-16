@@ -1,0 +1,31 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ include "etcd.fullname" . }}-peer-cert
+  namespace: {{ .Release.Namespace }}
+spec:
+  isCA: false
+  commonName: etcd
+  secretName: {{ include "etcd.caSecretName" . }}-peer
+  privateKey:
+    algorithm: RSA
+    size: 2048
+  duration: 8760h
+  usages:
+    - signing
+    - key encipherment
+    - server auth
+    - client auth
+  issuerRef:
+    name: {{ include "etcd.fullname" . }}-ca-issuer
+    kind: Issuer
+    group: cert-manager.io
+  dnsNames:
+    {{- range $count := until (int $.Values.replicas) }}
+    - {{ printf "\"%s-%d\"" ( include "etcd.stsName" $ ) $count }}
+    - {{ printf "\"%s-%d.%s\"" ( include "etcd.stsName" $ ) $count (include "etcd.serviceName" $) }}
+    - {{ printf "\"%s-%d.%s.%s.svc\"" ( include "etcd.stsName" $ ) $count (include "etcd.serviceName" $) $.Release.Namespace }}
+    - {{ printf "\"%s-%d.%s.%s.svc.cluster.local\"" ( include "etcd.stsName" $ ) $count (include "etcd.serviceName" $) $.Release.Namespace }}
+    {{- end }}
+  ipAddresses:
+    - "127.0.0.1"

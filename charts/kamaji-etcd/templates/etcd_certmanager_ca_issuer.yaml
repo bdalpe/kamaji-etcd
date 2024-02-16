@@ -1,0 +1,10 @@
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: {{ include "etcd.fullname" . }}-ca-issuer
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "etcd.labels" . | nindent 4 }}
+spec:
+  ca:
+    secretName: {{ include "etcd.caSecretName" . }}
