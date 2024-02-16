@@ -89,7 +89,7 @@ Name of the certificate signing requests for the certificates required by etcd.
 Name of the etcd role
 */}}
 {{- define "etcd.roleName" }}
-{{- printf "%s-gen-certs-role" (include "etcd.fullname" .) }}
+{{- printf "%s-postinstall-job-role" (include "etcd.fullname" .) }}
 {{- end }}
 
 {{/*
