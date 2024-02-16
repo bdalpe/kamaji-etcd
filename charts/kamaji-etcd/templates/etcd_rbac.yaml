@@ -2,7 +2,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   annotations:
-    "helm.sh/hook": pre-install,post-install,pre-delete
+    "helm.sh/hook": post-install
     "helm.sh/hook-delete-policy": "hook-succeeded,hook-failed"
     "helm.sh/hook-weight": "5"
   labels:
@@ -25,7 +25,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   annotations:
-    "helm.sh/hook": pre-install,post-install,pre-delete
+    "helm.sh/hook": post-install
     "helm.sh/hook-delete-policy": "hook-succeeded,hook-failed"
     "helm.sh/hook-weight": "5"
   labels:
