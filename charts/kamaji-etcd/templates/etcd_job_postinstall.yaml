@@ -42,7 +42,7 @@ spec:
             - name: ETCDCTL_ENDPOINTS
               value: https://{{ include "etcd.fullname" . }}-0.{{ include "etcd.serviceName" . }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.clientPort }}
             - name: ETCDCTL_CACERT
-              value: /opt/certs/ca/ca.crt
+              value: /opt/certs/root-certs/ca.crt
             - name: ETCDCTL_CERT
               value: /opt/certs/root-certs/tls.crt
             - name: ETCDCTL_KEY
@@ -53,8 +53,6 @@ spec:
           volumeMounts:
             - name: root-certs
               mountPath: /opt/certs/root-certs
-            - name: ca
-              mountPath: /opt/certs/ca
       securityContext:
         runAsUser: 1000
         runAsGroup: 1000
@@ -66,6 +64,3 @@ spec:
         - name: root-certs
           secret:
             secretName: {{ include "etcd.clientSecretName" . }}
-        - name: ca
-          secret:
-            secretName: {{ include "etcd.caSecretName" . }}

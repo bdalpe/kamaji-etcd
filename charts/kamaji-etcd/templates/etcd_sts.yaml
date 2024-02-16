@@ -26,8 +26,13 @@ spec:
     spec:
       volumes:
         - name: certs
+        - name: server-cert
           secret:
             secretName: {{ include "etcd.caSecretName" . }}
+            secretName: {{ include "etcd.caSecretName" . }}-server
+        - name: peer-cert
+          secret:
+            secretName: {{ include "etcd.caSecretName" . }}-peer
       containers:
         - name: etcd
           image: {{ include "etcd.fullyQualifiedDockerImage" . }}
@@ -46,6 +51,10 @@ spec:
               mountPath: /var/run/etcd
             - name: certs
               mountPath: /etc/etcd/pki
+            - name: server-cert
+              mountPath: /etc/etcd/pki/server
+            - name: peer-cert
+              mountPath: /etc/etcd/pki/peer
           command:
             - etcd
             - --data-dir=/var/run/etcd
@@ -60,12 +69,12 @@ spec:
             - --listen-peer-urls=https://0.0.0.0:{{ .Values.peerApiPort }}
             - --client-cert-auth=true
             - --peer-client-cert-auth=true
-            - --trusted-ca-file=/etc/etcd/pki/ca.crt
-            - --cert-file=/etc/etcd/pki/server.pem
-            - --key-file=/etc/etcd/pki/server-key.pem
-            - --peer-trusted-ca-file=/etc/etcd/pki/ca.crt
-            - --peer-cert-file=/etc/etcd/pki/peer.pem
-            - --peer-key-file=/etc/etcd/pki/peer-key.pem
+            - --trusted-ca-file=/etc/etcd/pki/server/ca.crt
+            - --cert-file=/etc/etcd/pki/server/tls.crt
+            - --key-file=/etc/etcd/pki/server/tls.key
+            - --peer-trusted-ca-file=/etc/etcd/pki/peer/ca.crt
+            - --peer-cert-file=/etc/etcd/pki/peer/tls.crt
+            - --peer-key-file=/etc/etcd/pki/peer/tls.key
             - --auto-compaction-mode={{ .Values.autoCompactionMode }}
             - --auto-compaction-retention={{ .Values.autoCompactionRetention }}
             - --snapshot-count={{ .Values.snapshotCount }}

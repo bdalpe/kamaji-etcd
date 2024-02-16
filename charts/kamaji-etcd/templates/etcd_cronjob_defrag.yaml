@@ -33,7 +33,7 @@ spec:
                 done;
             env:
             - name: ETCDCTL_CACERT
-              value: /opt/certs/ca/ca.crt
+              value: /opt/certs/root-client-certs/ca.crt
             - name: ETCDCTL_CERT
               value: /opt/certs/root-client-certs/tls.crt
             - name: ETCDCTL_KEY
@@ -41,8 +41,6 @@ spec:
             volumeMounts:
             - name: root-client-certs
               mountPath: /opt/certs/root-client-certs
-            - name: certs
-              mountPath: /opt/certs/ca
           securityContext:
             runAsUser: 1000
             runAsGroup: 1000
@@ -54,9 +52,4 @@ spec:
           - name: root-client-certs
             secret:
               secretName: {{ include "etcd.clientSecretName" . }}
-              optional: true
-          - name: certs
-            secret:
-              secretName: {{ include "etcd.caSecretName" . }}
-              optional: true
 {{- end }}
