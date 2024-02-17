@@ -27,6 +27,13 @@ Create the etcd fully-qualified Docker image to use
 {{- end }}
 
 {{/*
+Create the busybox fully-qualified Docker image to use
+*/}}
+{{- define "busybox.fullyQualifiedDockerImage" -}}
+{{- printf "%s:%s" .Values.image.jobs.repository ( .Values.image.jobs.tag | default "latest" ) -}}
+{{- end }}
+
+{{/*
 Create the name of the Service to use
 */}}
 {{- define "etcd.serviceName" -}}
@@ -96,7 +103,7 @@ Name of the etcd role
 Name of the etcd role binding
 */}}
 {{- define "etcd.roleBindingName" }}
-{{- printf "%s-gen-certs-rolebiding" (include "etcd.fullname" .) }}
+{{- printf "%s-postinstall-job-rolebiding" (include "etcd.fullname" .) }}
 {{- end }}
 
 {{/*

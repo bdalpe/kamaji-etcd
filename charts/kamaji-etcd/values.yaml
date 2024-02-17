@@ -20,6 +20,15 @@ image:
   # -- Pull policy to use
   pullPolicy: IfNotPresent
 
+  # --
+  jobs:
+    # --
+    repository: busybox
+    # --
+    tag: "1.36.1-uclibc"
+    # --
+    pullPolicy: IfNotPresent
+
 # -- The peer API port which servers are listening to.
 peerApiPort: 2380
 
