@@ -39,8 +39,8 @@ spec:
               etcdctl auth enable
             fi
           env:
-            - name: ETCDCTL_ENDPOINTS
-              value: https://{{ include "etcd.fullname" . }}-0.{{ include "etcd.serviceName" . }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.clientPort }}
+            - name: ETCDCTL_DISCOVERY_SRV
+              value: {{ include "etcd.serviceName" . }}.{{ $.Release.Namespace }}.svc.cluster.local
             - name: ETCDCTL_CACERT
               value: /opt/certs/root-certs/ca.crt
             - name: ETCDCTL_CERT
