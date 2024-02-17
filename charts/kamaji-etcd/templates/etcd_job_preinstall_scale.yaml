@@ -1,0 +1,92 @@
+{{- $current := (int ((lookup "apps/v1" "StatefulSet" $.Release.Namespace (include "etcd.stsName" $)).spec).replicas) -}}
+{{/*{{- $current := (int 5) -}}*/}}
+{{- $desired := (int $.Values.replicas) -}}
+{{- $difference := sub $desired $current }}
+{{- if ne 0 $difference -}}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  labels:
+    {{- include "etcd.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": pre-upgrade
+    "helm.sh/hook-delete-policy": "hook-succeeded,hook-failed"
+  name: "{{ .Release.Name }}-etcd-scale"
+  namespace: {{ .Release.Namespace }}
+spec:
+  backoffLimit: 12
+  template:
+    metadata:
+      name: "{{ .Release.Name }}"
+    spec:
+      serviceAccountName: {{ include "etcd.serviceAccountName" . }}
+      restartPolicy: Never
+      initContainers:
+        - name: busybox
+          image: {{ include "busybox.fullyQualifiedDockerImage" . }}
+          imagePullPolicy: {{ $.Values.image.jobs.pullPolicy | default "IfNotPresent"}}
+          command:
+            - /bin/cp
+            - /bin/sh
+            - /bin/cut
+            - /bin/grep
+            - /bins
+          volumeMounts:
+            - mountPath: /bins
+              name: bins
+      containers:
+        - command:
+          - sh
+          - -cx
+          - |-
+            {{- if gt $difference 0 }}
+            {{- /* scale up */}}
+            {{- range $i, $count := untilStep $current $desired 1 }}
+            etcdctl member add {{printf "%s-%d" ( include "etcd.stsName" $ ) $count}} --peer-urls={{ printf "https://%s-%d.%s.%s.svc.cluster.local:%d" ( include "etcd.stsName" $ ) $count ( include "etcd.serviceName" $ ) $.Release.Namespace (int $.Values.peerApiPort) }} || exit 1
+            {{- end }}
+            {{- else }}
+            {{- /* scale down */}}
+            MEMBERS="$(etcdctl member list)"
+            {{- range $i, $count := reverse (untilStep $desired $current 1) }}
+            etcdctl member remove $(echo "$MEMBERS" | grep {{ printf "%s-%d" ( include "etcd.stsName" $ ) $count }} | cut -f1 -d ",") || exit 1
+            {{- end }}
+            {{- end }}
+          env:
+            - name: ETCDCTL_ENDPOINTS
+              value: https://{{ include "etcd.stsName" $ }}-0.{{ include "etcd.serviceName" . }}.{{ $.Release.Namespace }}.svc.cluster.local:{{ $.Values.clientPort }}
+            - name: ETCDCTL_CACERT
+              value: /opt/certs/root-certs/ca.crt
+            - name: ETCDCTL_CERT
+              value: /opt/certs/root-certs/tls.crt
+            - name: ETCDCTL_KEY
+              value: /opt/certs/root-certs/tls.key
+          image: {{ include "etcd.fullyQualifiedDockerImage" . }}
+          imagePullPolicy: IfNotPresent
+          name: etcd-client
+          volumeMounts:
+            - name: root-certs
+              mountPath: /opt/certs/root-certs
+            - name: bins
+              mountPath: /usr/local/bin/sh
+              subPath: sh
+            - name: bins
+              mountPath: /usr/local/bin/grep
+              subPath: grep
+            - name: bins
+              mountPath: /usr/local/bin/cut
+              subPath: cut
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+      {{- with .Values.tolerations }}
+      tolerations: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+        - name: root-certs
+          secret:
+            secretName: {{ include "etcd.clientSecretName" . }}
+        - name: bins
+          emptyDir:
+            medium: Memory
+{{- end }}
