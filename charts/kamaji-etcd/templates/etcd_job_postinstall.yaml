@@ -24,10 +24,19 @@ spec:
           - sh
           - -c
           - kubectl --namespace={{ .Release.Namespace }} rollout status sts/{{ include "etcd.stsName" . }} --timeout=300s
+        - name: busybox
+          image: {{ include "busybox.fullyQualifiedDockerImage" . }}
+          command:
+            - /bin/cp
+            - /bin/sh
+            - /bins/sh
+          volumeMounts:
+            - mountPath: /bins
+              name: bins
       containers:
         - command:
-          - bash
-          - -c
+          - sh
+          - -cx
           - |-
             etcdctl member list -w table
             if etcdctl user get root &>/dev/null; then
@@ -53,6 +62,9 @@ spec:
           volumeMounts:
             - name: root-certs
               mountPath: /opt/certs/root-certs
+            - name: bins
+              mountPath: /usr/local/bin/sh
+              subPath: sh
       securityContext:
         runAsUser: 1000
         runAsGroup: 1000
@@ -64,3 +76,6 @@ spec:
         - name: root-certs
           secret:
             secretName: {{ include "etcd.clientSecretName" . }}
+        - name: bins
+          emptyDir:
+            medium: Memory
