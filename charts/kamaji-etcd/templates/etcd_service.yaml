@@ -10,9 +10,9 @@ spec:
   publishNotReadyAddresses: true
   ports:
     - port: {{ .Values.clientPort }}
-      name: client
+      name: etcd-client-ssl
     - port: {{ .Values.peerApiPort }}
-      name: peer
+      name: etcd-server-ssl
     - port: {{ .Values.metricsPort }}
       name: metrics
   selector:
