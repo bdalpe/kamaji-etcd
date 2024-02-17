@@ -11,6 +11,7 @@ spec:
     matchLabels:
       {{- include "etcd.selectorLabels" . | nindent 6 }}
   replicas: {{ .Values.replicas }}
+  podManagementPolicy: Parallel
   template:
     metadata:
       name: etcd
@@ -34,6 +35,13 @@ spec:
         - name: peer-cert
           secret:
             secretName: {{ include "etcd.caSecretName" . }}-peer
+      initContainers:
+        - name: sleep
+          image: {{ include "busybox.fullyQualifiedDockerImage" . }}
+          command:
+            - sleep
+          args:
+            - "3"
       containers:
         - name: etcd
           image: {{ include "etcd.fullyQualifiedDockerImage" . }}
@@ -60,8 +68,8 @@ spec:
             - etcd
             - --data-dir=/var/run/etcd
             - --name=$(POD_NAME)
-            - --initial-cluster-state=new
-            - --initial-cluster={{ include "etcd.initialCluster" . }}
+            - --initial-cluster-state={{ ternary "new" "existing" .Release.IsInstall }}
+            - --discovery-srv={{ include "etcd.serviceName" . }}.$(POD_NAMESPACE).svc.cluster.local
             - --initial-advertise-peer-urls=https://$(POD_NAME).{{ include "etcd.serviceName" . }}.$(POD_NAMESPACE).svc.cluster.local:{{ .Values.peerApiPort }}
             - --advertise-client-urls=https://$(POD_NAME).{{ include "etcd.serviceName" . }}.$(POD_NAMESPACE).svc.cluster.local:{{ .Values.clientPort }}
             - --initial-cluster-token=kamaji
